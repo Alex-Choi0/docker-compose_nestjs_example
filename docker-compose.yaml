@@ -1,6 +1,6 @@
 networks:
   # 해당 도커 컴포즈로 실행한 컨테이너는 동일한 네트워크를 공유한다.
-  backend_network:
+  backend_network1:
 services:
   # 해당 예제에서 사용할 DB(postgres 12)
   db:
@@ -15,9 +15,9 @@ services:
       POSTGRES_USER: alex
       POSTGRES_PASSWORD: password
     networks:
-      - backend_network
+      - backend_network1
     # 재시작시 자동 실행이 필요하면 restart이 'always'이다.
-    restart: always
+    # restart: always
     # 로그가 쌓이면 해당 인스턴스의 하드를 과도하게 점유하게 된다.
     # 로그를 제한한다.
     logging:
@@ -33,8 +33,8 @@ services:
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
     networks:
-      - backend_network
-    restart: always
+      - backend_network1
+    # restart: always
     logging:
       driver: 'json-file'
       options:
@@ -49,15 +49,15 @@ services:
     ports:
       - '4000:3000'
     networks:
-      - backend_network
+      - backend_network1
     environment:
       - REDIS_URL=redis://cach:6379
-      - PG_HOST=db
-      - PG_USERNAME=alex
-      - PG_PASSWORD=password
-      - PG_DATABASE=postgres
-      - PG_PORT=5432
-      - PG_SYNC=true
+      - HOST=db
+      - USER=alex
+      - PASSWORD=password
+      - DATABASE=postgres
+      - PORT=5432
+      - SYNC=true
       - SALT=apple
       - RES_SALT=res_apple
       - EXPIRESTOKEN=24h
@@ -66,7 +66,7 @@ services:
     depends_on:
       - db
       - cach
-    restart: always
+    # restart: always
     logging:
       driver: 'json-file'
       options:

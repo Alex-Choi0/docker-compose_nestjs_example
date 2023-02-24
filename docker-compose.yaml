@@ -21,12 +21,12 @@ services:
     # 로그가 쌓이면 해당 인스턴스의 하드를 과도하게 점유하게 된다.
     # 로그를 제한한다.
     logging:
-      driver: "json-file"
+      driver: 'json-file'
       options:
         # 로그의 파일 갯수
-        max-file: "3"
+        max-file: '3'
         # 로그의 파일 크기(10m = 10 MB : megabites)
-        max-size: "10m"
+        max-size: '10m'
 
   cach:
     image: 'bitnami/redis:latest'
@@ -36,10 +36,10 @@ services:
       - backend_network
     restart: always
     logging:
-      driver: "json-file"
+      driver: 'json-file'
       options:
-        max-file: "3"
-        max-size: "10m"
+        max-file: '3'
+        max-size: '10m'
 
   backend:
     # 이미지 생성을 위해 해당 디렉토리에 있는 Dockerfile를 build한다.
@@ -55,7 +55,7 @@ services:
       - PG_HOST=db
       - PG_USERNAME=alex
       - PG_PASSWORD=password
-      - PG_DATABASE=startup
+      - PG_DATABASE=postgres
       - PG_PORT=5432
       - PG_SYNC=true
       - SALT=apple
@@ -68,11 +68,10 @@ services:
       - cach
     restart: always
     logging:
-      driver: "json-file"
+      driver: 'json-file'
       options:
-        max-file: "3"
-        max-size: "10m"
+        max-file: '3'
+        max-size: '10m'
 
 volumes:
   db_example:
-

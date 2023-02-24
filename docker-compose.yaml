@@ -1,0 +1,78 @@
+networks:
+  # 해당 도커 컴포즈로 실행한 컨테이너는 동일한 네트워크를 공유한다.
+  backend_network:
+services:
+  # 해당 예제에서 사용할 DB(postgres 12)
+  db:
+    # Pull받을 DB 이미지
+    image: 'postgres:12'
+    # 해당 DB의 데이터를 volume으로 저장(postgres)
+    volumes:
+      - db_example:/var/lib/postgresql/data
+    # 해당 도커 환경을 설정한다.
+    # 위 DB에서는 사용자(USER)와 비밀번호(PASSWORD)를 설정한다.
+    environment:
+      POSTGRES_USER: alex
+      POSTGRES_PASSWORD: password
+    networks:
+      - backend_network
+    # 재시작시 자동 실행이 필요하면 restart이 'always'이다.
+    restart: always
+    # 로그가 쌓이면 해당 인스턴스의 하드를 과도하게 점유하게 된다.
+    # 로그를 제한한다.
+    logging:
+      driver: "json-file"
+      options:
+        # 로그의 파일 갯수
+        max-file: "3"
+        # 로그의 파일 크기(10m = 10 MB : megabites)
+        max-size: "10m"
+
+  cach:
+    image: 'bitnami/redis:latest'
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    networks:
+      - backend_network
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "3"
+        max-size: "10m"
+
+  backend:
+    # 이미지 생성을 위해 해당 디렉토리에 있는 Dockerfile를 build한다.
+    # docker-compose파일에 같은경로로 Dockerfile이 있을시 '.' 을 찍으면 된다.
+    # 같은경로가 아닐시 상대경로로 지정해서 실행한다.
+    build: .
+    ports:
+      - '4000:3000'
+    networks:
+      - backend_network
+    environment:
+      - REDIS_URL=redis://cach:6379
+      - PG_HOST=db
+      - PG_USERNAME=alex
+      - PG_PASSWORD=password
+      - PG_DATABASE=startup
+      - PG_PORT=5432
+      - PG_SYNC=true
+      - SALT=apple
+      - RES_SALT=res_apple
+      - EXPIRESTOKEN=24h
+      - RES_EXPIRESTOKEN=720h
+    # 해당 서버가 실행되기전 반드시 실행되고 있어야 하는 컨테이너를 설정합니다.
+    depends_on:
+      - db
+      - cach
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "3"
+        max-size: "10m"
+
+volumes:
+  db_example:
+
